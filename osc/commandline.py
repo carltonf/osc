@@ -8179,10 +8179,11 @@ Please submit there instead, or use --nodevelproject to force direct submission.
 
     def _load_plugins(self):
         plugin_dirs = [
+            os.path.expanduser('~/.osc-plugins'),
             '/usr/lib/osc-plugins',
             '/usr/local/lib/osc-plugins',
             '/var/lib/osc-plugins',  # Kept for backward compatibility
-            os.path.expanduser('~/.osc-plugins')]
+            ]
         for plugin_dir in plugin_dirs:
             if not os.path.isdir(plugin_dir):
                 continue
