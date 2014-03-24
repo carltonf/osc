@@ -8177,6 +8177,32 @@ Please submit there instead, or use --nodevelproject to force direct submission.
                 if not opts.dry_run:
                     os.unlink(os.path.join(p.absdir, filename))
 
+    def do_geturl(self, subcmd, opts, *args):
+        """${cmd_name}: Print urls for related web
+
+        Print information about each ARG (default: '.')
+        ARG is a working-copy path.
+
+        ${cmd_usage}
+        ${cmd_option_list}
+        """
+        args = parseargs(args)
+        pacs = findpacs(args)
+
+        # the following constants might be better in OSC config files
+        obs_base_url="https://build.opensuse.org"
+        ibs_base_url="https://api.suse.de"
+
+        for p in pacs:
+            obs_source_url = makeurl(obs_base_url, ['package/show', p.prjname, p.name])
+            print("Package Page: " + obs_source_url)
+            obs_requests_url = makeurl(obs_base_url, ['package/requests', p.prjname, p.name])
+            print("Requests Page: " + obs_requests_url)
+            if p.linkinfo.islink():
+                plink = p.linkinfo
+                obs_link_url = makeurl(obs_base_url, ['package/show', plink.project, plink.package])
+                print("Link Package Page: " + obs_link_url)
+
     def _load_plugins(self):
         plugin_dirs = [
             os.path.expanduser('~/.osc-plugins'),
