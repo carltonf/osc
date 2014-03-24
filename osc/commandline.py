@@ -8191,17 +8191,32 @@ Please submit there instead, or use --nodevelproject to force direct submission.
 
         # the following constants might be better in OSC config files
         obs_base_url="https://build.opensuse.org"
-        ibs_base_url="https://api.suse.de"
+        ibs_base_url="https://build.suse.de"
 
         for p in pacs:
-            obs_source_url = makeurl(obs_base_url, ['package/show', p.prjname, p.name])
-            print("Package Page: " + obs_source_url)
-            obs_requests_url = makeurl(obs_base_url, ['package/requests', p.prjname, p.name])
-            print("Requests Page: " + obs_requests_url)
+            if p.apiurl.find("suse.de") != -1:
+                bs_base_url = ibs_base_url
+            elif p.apiurl.find("opensuse.org") != -1:
+                bs_base_url = obs_base_url
+            else:
+                print("Unknown API URL: %s" % p.apiurl)
+                return 1
+
+            bs_source_url = makeurl(bs_base_url, ['package/show', p.prjname, p.name])
+            print("Package Page: " + bs_source_url)
+            bs_requests_url = makeurl(bs_base_url, ['package/requests', p.prjname, p.name])
+            print("Requests Page: " + bs_requests_url)
             if p.linkinfo.islink():
                 plink = p.linkinfo
-                obs_link_url = makeurl(obs_base_url, ['package/show', plink.project, plink.package])
-                print("Link Package Page: " + obs_link_url)
+                bs_link_url = makeurl(bs_base_url, ['package/show', plink.project, plink.package])
+                print("Link Package Page: " + bs_link_url)
+                bs_linkdiff_url = makeurl(bs_base_url,
+                                           ['package/rdiff', p.prjname, p.name],
+                                            {'opackage': plink.package,
+                                             'oproject': plink.project,
+                                             # note revision is the md5sum, rev is the simplified number.
+                                             'revision': p.rev })
+                print("Linkdiff Page: " + bs_linkdiff_url)
 
     def _load_plugins(self):
         plugin_dirs = [
