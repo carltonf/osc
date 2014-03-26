@@ -8203,20 +8203,22 @@ Please submit there instead, or use --nodevelproject to force direct submission.
                 return 1
 
             bs_source_url = makeurl(bs_base_url, ['package/show', p.prjname, p.name])
-            print("Package Page: " + bs_source_url)
+            print("Package: " + bs_source_url)
             bs_requests_url = makeurl(bs_base_url, ['package/requests', p.prjname, p.name])
-            print("Requests Page: " + bs_requests_url)
+            print("Requests: " + bs_requests_url)
             if p.linkinfo.islink():
                 plink = p.linkinfo
                 bs_link_url = makeurl(bs_base_url, ['package/show', plink.project, plink.package])
-                print("Link Package Page: " + bs_link_url)
+                print("Link Package: " + bs_link_url)
+                bs_linkrevs_url = makeurl(bs_base_url, ['package/revisions', plink.project, plink.package])
+                print("Link Package Revision: " + bs_linkrevs_url)
                 bs_linkdiff_url = makeurl(bs_base_url,
                                            ['package/rdiff', p.prjname, p.name],
                                             {'opackage': plink.package,
                                              'oproject': plink.project,
                                              # note revision is the md5sum, rev is the simplified number.
                                              'revision': p.rev })
-                print("Linkdiff Page: " + bs_linkdiff_url)
+                print("Linkdiff: " + bs_linkdiff_url)
 
     def _load_plugins(self):
         plugin_dirs = [
