@@ -3613,9 +3613,9 @@ def run_pager(message, tmp_suffix=''):
             elif not line.find("+++", 0, 3) or not line.find("---", 0, 3):
                 colored_msg += '\x1b[1;30m%s\x1b[0m' % line
             elif line[0] == '-':
-                colored_msg += '\x1b[0;32m%s\x1b[0m' % line
-            elif line[0] == '+':
                 colored_msg += '\x1b[0;31m%s\x1b[0m' % line
+            elif line[0] == '+':
+                colored_msg += '\x1b[0;32m%s\x1b[0m' % line
             elif line[0] == '@':
                 colored_msg += '\x1b[0;36m%s\x1b[0m' % line
             else:
