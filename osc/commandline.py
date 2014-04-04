@@ -3207,12 +3207,21 @@ Please submit there instead, or use --nodevelproject to force direct submission.
         The server restores a package including the sources and meta configuration.
         Binaries remain to be lost and will be rebuild.
 
+        With no arguments and the current directory is a checked out working
+        directory, undelete this package.
+
         usage:
+           osc undelete
            osc undelete PROJECT
            osc undelete PROJECT PACKAGE [PACKAGE ...]
 
         ${cmd_option_list}
         """
+
+        apiurl = self.get_api_url()
+        if len(args) == 0 and is_package_dir('.'):
+            apiurl=store_read_apiurl('.')
+            args = (store_read_project('.'), store_read_package('.'))
 
         args = slash_split(args)
         if len(args) < 1:
@@ -3224,7 +3233,6 @@ Please submit there instead, or use --nodevelproject to force direct submission.
         else:
             msg = edit_message()
 
-        apiurl = self.get_api_url()
         prj = args[0]
         pkgs = args[1:]
 
@@ -3251,18 +3259,25 @@ Please submit there instead, or use --nodevelproject to force direct submission.
         its packages use \'--recursive\' switch.
         It may still not work because other depends on it. If you want to ignore this as
         well use \'--force\' switch.
+        
+        With no arguments and the current directory is a checked out working
+        directory, delete this package.
 
         usage:
+           osc rdelete [-r] [-f]
            osc rdelete [-r] [-f] PROJECT [PACKAGE]
 
         ${cmd_option_list}
         """
+        apiurl = self.get_api_url()
+        if len(args) == 0 and is_package_dir('.'):
+            apiurl=store_read_apiurl('.')
+            args = (store_read_project('.'), store_read_package('.'))
 
         args = slash_split(args)
         if len(args) < 1 or len(args) > 2:
             raise oscerr.WrongArgs('Wrong number of arguments')
 
-        apiurl = self.get_api_url()
         prj = args[0]
 
         msg = ''
@@ -8222,7 +8237,7 @@ Please submit there instead, or use --nodevelproject to force direct submission.
                                              # note revision is the md5sum, rev is the simplified number.
                                              'revision': p.rev })
                 self._geturl_print("Linkdiff: ", bs_linkdiff_url)
-
+        
     def _load_plugins(self):
         plugin_dirs = [
             os.path.expanduser('~/.osc-plugins'),
