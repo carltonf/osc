@@ -3216,12 +3216,21 @@ Please submit there instead, or use --nodevelproject to force direct submission.
         The server restores a package including the sources and meta configuration.
         Binaries remain to be lost and will be rebuild.
 
+        With no arguments and the current directory is a checked out working
+        directory, undelete this package.
+
         usage:
+           osc undelete
            osc undelete PROJECT
            osc undelete PROJECT PACKAGE [PACKAGE ...]
 
         ${cmd_option_list}
         """
+
+        apiurl = self.get_api_url()
+        if len(args) == 0 and is_package_dir('.'):
+            apiurl=store_read_apiurl('.')
+            args = (store_read_project('.'), store_read_package('.'))
 
         args = slash_split(args)
         if len(args) < 1:
@@ -3233,7 +3242,6 @@ Please submit there instead, or use --nodevelproject to force direct submission.
         else:
             msg = edit_message()
 
-        apiurl = self.get_api_url()
         prj = args[0]
         pkgs = args[1:]
 
@@ -3260,18 +3268,25 @@ Please submit there instead, or use --nodevelproject to force direct submission.
         its packages use \'--recursive\' switch.
         It may still not work because other depends on it. If you want to ignore this as
         well use \'--force\' switch.
+        
+        With no arguments and the current directory is a checked out working
+        directory, delete this package.
 
         usage:
+           osc rdelete [-r] [-f]
            osc rdelete [-r] [-f] PROJECT [PACKAGE]
 
         ${cmd_option_list}
         """
+        apiurl = self.get_api_url()
+        if len(args) == 0 and is_package_dir('.'):
+            apiurl=store_read_apiurl('.')
+            args = (store_read_project('.'), store_read_package('.'))
 
         args = slash_split(args)
         if len(args) < 1 or len(args) > 2:
             raise oscerr.WrongArgs('Wrong number of arguments')
 
-        apiurl = self.get_api_url()
         prj = args[0]
 
         msg = ''
@@ -8180,12 +8195,59 @@ Please submit there instead, or use --nodevelproject to force direct submission.
                 if not opts.dry_run:
                     os.unlink(os.path.join(p.absdir, filename))
 
+    def _geturl_print(self, heading, content):
+        print("\x1b[0;34m%s\x1b[0m" % heading + content);
+
+    def do_geturl(self, subcmd, opts, *args):
+        """${cmd_name}: Print urls for related web
+
+        Print information about each ARG (default: '.')
+        ARG is a working-copy path.
+
+        ${cmd_usage}
+        ${cmd_option_list}
+        """
+        args = parseargs(args)
+        pacs = findpacs(args)
+
+        # the following constants might be better in OSC config files
+        obs_base_url="https://build.opensuse.org"
+        ibs_base_url="https://build.suse.de"
+
+        for p in pacs:
+            if p.apiurl.find("suse.de") != -1:
+                bs_base_url = ibs_base_url
+            elif p.apiurl.find("opensuse.org") != -1:
+                bs_base_url = obs_base_url
+            else:
+                print("Unknown API URL: %s" % p.apiurl)
+                return 1
+
+            bs_source_url = makeurl(bs_base_url, ['package/show', p.prjname, p.name])
+            self._geturl_print("Package: ", bs_source_url)
+            bs_requests_url = makeurl(bs_base_url, ['package/requests', p.prjname, p.name])
+            self._geturl_print("Requests: ", bs_requests_url)
+            if p.linkinfo.islink():
+                plink = p.linkinfo
+                bs_link_url = makeurl(bs_base_url, ['package/show', plink.project, plink.package])
+                self._geturl_print("Link Package: ", bs_link_url)
+                bs_linkrevs_url = makeurl(bs_base_url, ['package/revisions', plink.project, plink.package])
+                self._geturl_print("Link Package Revision: ", bs_linkrevs_url)
+                bs_linkdiff_url = makeurl(bs_base_url,
+                                           ['package/rdiff', p.prjname, p.name],
+                                            {'opackage': plink.package,
+                                             'oproject': plink.project,
+                                             # note revision is the md5sum, rev is the simplified number.
+                                             'revision': p.rev })
+                self._geturl_print("Linkdiff: ", bs_linkdiff_url)
+        
     def _load_plugins(self):
         plugin_dirs = [
+            os.path.expanduser('~/.osc-plugins'),
             '/usr/lib/osc-plugins',
             '/usr/local/lib/osc-plugins',
             '/var/lib/osc-plugins',  # Kept for backward compatibility
-            os.path.expanduser('~/.osc-plugins')]
+            ]
         for plugin_dir in plugin_dirs:
             if not os.path.isdir(plugin_dir):
                 continue

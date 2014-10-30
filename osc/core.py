@@ -3734,8 +3734,25 @@ def run_pager(message, tmp_suffix=''):
     if not sys.stdout.isatty():
         print(message)
     else:
+        # colorize when outputting to terminal
+        colored_msg=''
+        for line in message.split('\n'):
+            if not line:
+                colored_msg += ''
+            elif not line.find("+++", 0, 3) or not line.find("---", 0, 3):
+                colored_msg += '\x1b[1;30m%s\x1b[0m' % line
+            elif line[0] == '-':
+                colored_msg += '\x1b[0;31m%s\x1b[0m' % line
+            elif line[0] == '+':
+                colored_msg += '\x1b[0;32m%s\x1b[0m' % line
+            elif line[0] == '@':
+                colored_msg += '\x1b[0;36m%s\x1b[0m' % line
+            else:
+                colored_msg += line
+            colored_msg += '\n'
+
         tmpfile = tempfile.NamedTemporaryFile(suffix=tmp_suffix)
-        tmpfile.write(message)
+        tmpfile.write(colored_msg)
         tmpfile.flush()
         pager = os.getenv('PAGER', default=get_default_pager())
         try:
